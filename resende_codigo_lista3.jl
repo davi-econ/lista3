@@ -1,10 +1,13 @@
+using LinearAlgebra
 using Distributions
 using NBInclude
 using Plots
 using NLsolve
-using LinearAlgebra
-# funções a serem usadas
+
 @nbinclude("tauchen.ipynb")
+@nbinclude("phi_consumo.ipynb")
+@nbinclude("galerkin.ipynb")
+@nbinclude("colocacao.ipynb")
 
 # parametros do modelo
 β = beta = 0.987
@@ -16,8 +19,23 @@ using LinearAlgebra
 
 # capital de estado estacionario
 kee = (α/(1/β -1 + δ))^(1/(1-α))
-K = reshape(LinRange(0.75*kee,1.25*kee,500),1,500) |> Matrix
+K = LinRange(0.75*kee,1.25*kee,500)
+L = LinRange(0.75*kee,1.25*kee,11)
 k_norm
 # grid de choques
 Z, P = disc_t(7)
 S = exp.(Z)
+
+
+############################
+## polinomio de Chebyshev ##
+############################
+
+######################
+#### fea colocação ###
+######################
+
+#####################
+#### fea galerkin ###
+#####################
+plot(euler_error_21(a_otimo,L,K,S,P))

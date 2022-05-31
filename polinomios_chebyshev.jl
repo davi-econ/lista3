@@ -78,7 +78,7 @@ end
 res(ones(2,7),1,S,P)
 guess = ones(2,7)
 s=1
-while s <= 5
+@time while s <= 5
     g(gamas) = res(gamas,s,S,P)
     gamaotimo = nlsolve(g,guess).zero
     guess = vcat(gamaotimo, zeros(1,7))
@@ -87,3 +87,60 @@ end
 gamaotimo
 
 res(gamaotimo,5,S,P)
+t = poli_cheb(5;capital = k_norm)
+c_0 = consumo(gamaotimo; teis = t)
+c_0
+k_1 = K.^(1/3)*S' .+ (1 - 0.012).*K .- c_0
+k_norm_1 = cb_zero(k_1)
+gamaotimo
+nz = 7
+eee = zeros(500,7)
+estado = 1
+
+k_norm
+for is in 1:ns
+    for ik in 1:nk
+        c = consumo(gamaotimo;poli_cheb(5;k_norm[ik]))
+        consumo[ik,is] = S[is]*K[ik]^(α) + (1-δ)*K[ik] - K[indice[ik,is]]
+        u_l = c^(-μ)
+        dcdk = S[is]*(α)*(K[ik]^(α-1))+(1-δ)
+        u_lk[ik,is] = u_l*dcdk
+    end
+end
+for is in 1:ns
+    for ik in 1:nk
+        inversa = (β*dot(P[is,:],u_lk[indice[ik,is],:]))^(1/-μ)
+        pe = inversa/consumo[ik,is]
+        euler = 1 - pe
+        eee[ik,is] = log10(abs(euler))
+    end
+end 
+
+
+##########################
+#### erros de Euler ######
+function euler_error_pc(gamas,d,grid_k,grid_z,P)
+    nz = length(grid_z)
+    nk = length(grid_k)
+    r_1 = cb_zero(grid_k)
+    t = poli_cheb(d; capital = r_1) # termos do polinomio
+
+    c_0 = consumo(gamas; teis = t) # consumo com polinomios
+
+    k_1 = grid_k.^(1/3)*grid_z' .+ (1 - 0.012).*grid_k .- c_0
+    capital_1 = cb_zero(k_1)  # normalizamos p/ [-1,1]
+
+    for estado in 1:nz
+        teis_1 = poli_cheb(d; capital = capital_1[:,estado]) # polinomios novos
+        c_1 = consumo(gamas;teis = teis_1)
+        ulinha = c_1.^(-2)
+        dcdk = (1/3)*k_1[:,estado].^(-2/3)*grid_z' .+ (1-0.012) 
+        lde = ulinha.*dcdk
+        for id in 1:nk
+             inversa = (0.987*dot(P[estado,:],lde[id,:]))^(-1/2)
+             eee[id,estado] = 1 - inversa/c_0[id,estado]
+        end
+    end
+    eee = log10.(abs.(eee))
+    return eee
+end
