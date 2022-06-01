@@ -44,8 +44,6 @@ end
 #################################
 ## tudo isso na função residuo ##
 #################################
-grid_z = S
-d = 1
 
 function res(gamas,d,grid_z,P)
     nz = length(grid_z)
@@ -87,36 +85,6 @@ end
 gamaotimo
 
 res(gamaotimo,5,S,P)
-t = poli_cheb(5;capital = k_norm)
-c_0 = consumo(gamaotimo; teis = t)
-c_0
-k_1 = K.^(1/3)*S' .+ (1 - 0.012).*K .- c_0
-k_norm_1 = cb_zero(k_1)
-gamaotimo
-nz = 7
-eee = zeros(500,7)
-estado = 1
-
-k_norm
-for is in 1:ns
-    for ik in 1:nk
-        c = consumo(gamaotimo;poli_cheb(5;k_norm[ik]))
-        consumo[ik,is] = S[is]*K[ik]^(α) + (1-δ)*K[ik] - K[indice[ik,is]]
-        u_l = c^(-μ)
-        dcdk = S[is]*(α)*(K[ik]^(α-1))+(1-δ)
-        u_lk[ik,is] = u_l*dcdk
-    end
-end
-for is in 1:ns
-    for ik in 1:nk
-        inversa = (β*dot(P[is,:],u_lk[indice[ik,is],:]))^(1/-μ)
-        pe = inversa/consumo[ik,is]
-        euler = 1 - pe
-        eee[ik,is] = log10(abs(euler))
-    end
-end 
-
-
 ##########################
 #### erros de Euler ######
 function euler_error_pc(gamas,d,grid_k,grid_z,P)
